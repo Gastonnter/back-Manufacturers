@@ -41,14 +41,6 @@ trabajo/
 - **class-validator** - Validación de DTOs
 - **Axios** - Cliente HTTP
 
-## 📊 Funcionalidades
-- ✅ Filtros por país, nombre, tipo de vehículo
-- ✅ Búsqueda general
-- ✅ Paginación y ordenamiento
-- ✅ Validación automática
-- ✅ Documentación Swagger
-- ✅ Manejo de errores
-
 ## 🚀 Comandos
 
 ### Desarrollo
@@ -77,31 +69,3 @@ http://localhost:3001/api/docs
 - **Endpoints**: 
   - `/getallmanufacturers?format=json`
   - `/getallmanufacturers?format=json&country={country}`
-
-## 📝 Ejemplo de Uso
-
-### Health Check
-```bash
-curl http://localhost:3001/
-```
-
-### Obtener fabricantes
-```bash
-# Todos los fabricantes
-curl http://localhost:3001/manufacturers
-
-# Con filtros
-curl "http://localhost:3001/manufacturers/filtered?country=UNITED%20STATES&page=1&limit=10"
-
-# Por país
-curl "http://localhost:3001/manufacturers/by-country?country=GERMANY"
-```
-
-## 📁 Arquitectura Simple
-- **Controllers**: Manejo de requests HTTP
-- **Services**: Lógica de negocio y llamadas a APIs externas
-- **DTOs**: Validación y tipado de datos
-- **Utils**: Servicios auxiliares para filtrado y paginación
-
----
-*API desarrollada para consultar fabricantes de vehículos de manera simple y eficiente*
