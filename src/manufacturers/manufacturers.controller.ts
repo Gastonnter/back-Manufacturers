@@ -1,6 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { Observable } from 'rxjs';
 import { ManufacturersService } from './manufacturers.service';
 import { ManufacturersResponseDto } from './dto/manufacturer.dto';
 import { FilterManufacturersDto } from './dto/filter-manufacturers.dto';
@@ -20,7 +19,7 @@ export class ManufacturersController {
     description: 'Lista de fabricantes obtenida exitosamente',
     type: ManufacturersResponseDto,
   })
-  getAllManufacturers(): Observable<ManufacturersResponseDto> {
+  getAllManufacturers(): Promise<ManufacturersResponseDto> {
     return this.manufacturersService.getAllManufacturers();
   }
 
@@ -37,7 +36,7 @@ export class ManufacturersController {
   })
   getFilteredManufacturers(
     @Query() filters: FilterManufacturersDto,
-  ): Observable<ManufacturersResponseDto> {
+  ): Promise<ManufacturersResponseDto> {
     return this.manufacturersService.getFilteredManufacturers(filters);
   }
 
@@ -59,7 +58,7 @@ export class ManufacturersController {
   })
   getManufacturersByCountry(
     @Query('country') country: string,
-  ): Observable<ManufacturersResponseDto> {
+  ): Promise<ManufacturersResponseDto> {
     return this.manufacturersService.getManufacturersByCountry(country);
   }
 }

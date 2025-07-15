@@ -1,7 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { Observable, catchError, map } from 'rxjs';
-import { AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import {
   ManufacturersResponseDto,
   NhtsaResponseDto,
@@ -14,103 +12,108 @@ import { ManufacturerFilterService } from './utils/manufacturer-filter.service';
 export class ManufacturersService {
   private readonly baseUrl = 'https://vpic.nhtsa.dot.gov/api/vehicles';
 
-  constructor(private readonly httpService: HttpService) {}
+  async getAllManufacturers(): Promise<ManufacturersResponseDto> {
+    try {
+      const response: AxiosResponse<NhtsaResponseDto> = await axios.get(
+        `${this.baseUrl}/getallmanufacturers?format=json`,
+      );
 
-  getAllManufacturers(): Observable<ManufacturersResponseDto> {
-    return this.httpService
-      .get<NhtsaResponseDto>(`${this.baseUrl}/getallmanufacturers?format=json`)
-      .pipe(
-        map((response: AxiosResponse<NhtsaResponseDto>) => {
-          const nhtsaData = response.data;
-          const transformedManufacturers: ManufacturerDto[] =
-            nhtsaData.Results.map((manufacturer) => ({
-              country: manufacturer.Country,
-              commonName: manufacturer.Mfr_CommonName,
-              legalName: manufacturer.Mfr_Name,
-              vehiclesType: manufacturer.VehicleTypes,
-            }));
-
-          return {
-            count: nhtsaData.Count,
-            message: nhtsaData.Message,
-            manufacturers: transformedManufacturers,
-          };
-        }),
-        catchError(() => {
-          throw new HttpException(
-            'Error fetching manufacturers from NHTSA API',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+      const nhtsaData = response.data;
+      const transformedManufacturers: ManufacturerDto[] = nhtsaData.Results.map(
+        (manufacturer) => ({
+          country: manufacturer.Country,
+          commonName: manufacturer.Mfr_CommonName,
+          legalName: manufacturer.Mfr_Name,
+          vehiclesType: manufacturer.VehicleTypes,
         }),
       );
+
+      return {
+        count: nhtsaData.Count,
+        message: nhtsaData.Message,
+        manufacturers: transformedManufacturers,
+      };
+    } catch (error) {
+      console.error('Error fetching manufacturers:', error);
+      throw new HttpException(
+        'Error fetching manufacturers from NHTSA API',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  getFilteredManufacturers(
+  async getFilteredManufacturers(
     filters: FilterManufacturersDto,
-  ): Observable<ManufacturersResponseDto> {
-    return this.getAllManufacturers().pipe(
-      map((response: ManufacturersResponseDto) => {
-        // Apply filters using service
-        const filteredManufacturers =
-          ManufacturerFilterService.filterManufacturers(
-            response.manufacturers,
-            filters,
-          );
+  ): Promise<ManufacturersResponseDto> {
+    try {
+      // Obtener todos los fabricantes primero
+      const response = await this.getAllManufacturers();
 
-        // Apply sorting using service
-        const sortedManufacturers = ManufacturerFilterService.sortManufacturers(
-          filteredManufacturers,
-          filters.sortBy,
-          filters.sortOrder,
+      // Aplicar filtros usando el servicio
+      const filteredManufacturers =
+        ManufacturerFilterService.filterManufacturers(
+          response.manufacturers,
+          filters,
         );
 
-        // Apply pagination using service
-        const paginationResult = ManufacturerFilterService.paginateResults(
-          sortedManufacturers,
-          filters.page || 1,
-          filters.limit || 10,
-        );
+      // Aplicar ordenamiento usando el servicio
+      const sortedManufacturers = ManufacturerFilterService.sortManufacturers(
+        filteredManufacturers,
+        filters.sortBy,
+        filters.sortOrder,
+      );
 
-        return {
-          count: filteredManufacturers.length,
-          message: response.message,
-          manufacturers: paginationResult.data,
-          pagination: paginationResult.pagination,
-        };
-      }),
-    );
+      // Aplicar paginación usando el servicio
+      const paginationResult = ManufacturerFilterService.paginateResults(
+        sortedManufacturers,
+        filters.page || 1,
+        filters.limit || 10,
+      );
+
+      return {
+        count: filteredManufacturers.length,
+        message: response.message,
+        manufacturers: paginationResult.data,
+        pagination: paginationResult.pagination,
+      };
+    } catch (error) {
+      console.error('Error filtering manufacturers:', error);
+      throw new HttpException(
+        'Error filtering manufacturers',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  getManufacturersByCountry(
+  async getManufacturersByCountry(
     country: string,
-  ): Observable<ManufacturersResponseDto> {
-    return this.httpService
-      .get<NhtsaResponseDto>(
+  ): Promise<ManufacturersResponseDto> {
+    try {
+      const response: AxiosResponse<NhtsaResponseDto> = await axios.get(
         `${this.baseUrl}/getallmanufacturers?format=json&country=${encodeURIComponent(country)}`,
-      )
-      .pipe(
-        map((response: AxiosResponse<NhtsaResponseDto>) => {
-          const nhtsaData = response.data;
-          const transformedManufacturers: ManufacturerDto[] =
-            nhtsaData.Results.map((manufacturer) => ({
-              country: manufacturer.Country,
-              commonName: manufacturer.Mfr_CommonName,
-              legalName: manufacturer.Mfr_Name,
-              vehiclesType: manufacturer.VehicleTypes,
-            }));
+      );
 
-          return {
-            count: nhtsaData.Count,
-            message: nhtsaData.Message,
-            manufacturers: transformedManufacturers,
-          };
-        }),
-        catchError(() => {
-          throw new HttpException(
-            'Error fetching manufacturers by country from NHTSA API',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
+      const nhtsaData = response.data;
+      const transformedManufacturers: ManufacturerDto[] = nhtsaData.Results.map(
+        (manufacturer) => ({
+          country: manufacturer.Country,
+          commonName: manufacturer.Mfr_CommonName,
+          legalName: manufacturer.Mfr_Name,
+          vehiclesType: manufacturer.VehicleTypes,
         }),
       );
+
+      return {
+        count: nhtsaData.Count,
+        message: nhtsaData.Message,
+        manufacturers: transformedManufacturers,
+      };
+    } catch (error) {
+      console.error('Error fetching manufacturers by country:', error);
+      throw new HttpException(
+        'Error fetching manufacturers by country from NHTSA API',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
