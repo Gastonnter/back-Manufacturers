@@ -37,7 +37,6 @@ trabajo/
 - **NestJS** - Framework principal
 - **TypeScript** - Lenguaje
 - **Swagger** - Documentación automática
-- **RxJS** - Programación reactiva
 - **class-validator** - Validación de DTOs
 - **Axios** - Cliente HTTP
 
